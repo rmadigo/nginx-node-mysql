@@ -1,0 +1,54 @@
+version: "3"
+
+services:
+  db:
+    build:
+      context: db
+    restart: always
+    tty: true
+    container_name: db
+    environment:
+      MYSQL_ROOT_PASSWORD: RootPassword
+      MYSQL_DATABASE: people
+    volumes:
+      - ./db/mysql_data:/var/lib/mysql
+    networks:
+      - node_net
+
+  app_node:
+    build:
+      context: node
+    command: npm start
+    restart: always
+    container_name: app_node
+    tty: true
+    volumes:
+      - ./node/app:/usr/src/app
+
+    depends_on:
+      - db
+    networks:
+      - node_net
+
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=RootPassword
+      - MYSQL_DB=people
+
+  nginx:
+    image: nginx
+    container_name: nginx
+    restart: always
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app_node
+    networks:
+      - node_net
+
+networks:
+  node_net:
+    driver: bridge
