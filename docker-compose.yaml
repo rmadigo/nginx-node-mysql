@@ -12,6 +12,12 @@ services:
       - ./db/mysql_data:/var/lib/mysql
     networks:
       - node_net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
   app_node:
     build:
@@ -21,8 +27,10 @@ services:
     tty: true
     volumes:
       - ./node/app:/usr/src/app
+      - /usr/src/app/node_modules
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - node_net
 
