@@ -130,3 +130,4 @@ dist
 .pnp.*
 
 db/mysql_data
+node/app/node_modules
